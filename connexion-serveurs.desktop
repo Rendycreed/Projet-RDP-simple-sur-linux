@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Connexions Serveurs
+Comment=Lancer les connexions RDP aux serveurs
+Exec=/opt/rdp/connexion_serveur.sh
+Icon=preferences-desktop-remote-desktop
+Terminal=false
+Categories=Network;RemoteAccess;
