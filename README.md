@@ -1,6 +1,6 @@
 ## RDP simple envirronnement de bureau linux
 
-Se projet est foncée sur le paquet FreeRDP le paquet peut différée en fonction de la distribution utiliser (Débain 12 ou 13, Ubuntu, Arch...). 
+Se projet est basée sur l'utilisation du paquet FreeRDP. Le paquet peut différée en fonction de la distribution utiliser (Débain 12 ou 13, Ubuntu, Arch...). 
 Le paquet freeRDP peut changer si le moteur de l'envirronement de bureau est X11 ou Wayland. 
 Il est aussi nécaissaire d'installer le paquet YAD pour l'interface graphique de connexion 
 
