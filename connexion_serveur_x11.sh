@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Version compatible FreeRDP 2 (xfreerdp) — pour Debian 12, Ubuntu avec X11
+
 # --- Liste des serveurs ---
 declare -A SERVEURS=(
 	["RDP_1"]="0.0.0.0"
@@ -104,7 +106,7 @@ fi
 # Option multi-écrans avec barre flottante
 multimon_opt=""
 if [ "$multiscreen" == "TRUE" ]; then
-	multimon_opt="/multimon /monitors:0,1 /floatbar"
+	multimon_opt="/multimon /floatbar"
 fi
 
 # Options son, micro
@@ -115,16 +117,16 @@ fi
 
 mic_opt=""
 if [ "$mic" == "TRUE" ]; then
-	mic_opt="/microphone"
+	mic_opt="/mic"
 fi
 
 echo "Tentative de connexion pour ${username} sur le serveur ${server_choice_display} (Argument /v: \"${userv}\")..."
 
-# Lance la connexion FreeRDP
-xfreerdp3 /dynamic-resolution /network:auto /sec:nla +auto-reconnect \
- /gfx /rfx /gdi:hw /cert:ignore \
+# Lance la connexion FreeRDP 2
+xfreerdp /dynamic-resolution /network:auto /sec:nla +auto-reconnect \
+ /gfx /rfx /compression /gdi:hw /cert-ignore \
  $sound_opt $mic_opt -themes -wallpaper +clipboard /clipboard:use-selection:CLIPBOARD \
- /kbd:layout:0x0000040C \
+ /kbd:0x0000040C \
  /drive:Linux,/home/$USER \
  $multimon_opt \
  /u:"$username" /p:"$pwd" /v:"$userv"

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Version Wayland — utilise sdl-freerdp3 (paquet freerdp3-sdl)
+
 # --- Liste des serveurs ---
 declare -A SERVEURS=(
 	["RDP_1"]="0.0.0.0"
@@ -104,7 +106,7 @@ fi
 # Option multi-écrans avec barre flottante
 multimon_opt=""
 if [ "$multiscreen" == "TRUE" ]; then
-	multimon_opt="/multimon /monitors:0,1 /floatbar"
+	multimon_opt="/multimon /floatbar"
 fi
 
 # Options son, micro
@@ -120,10 +122,10 @@ fi
 
 echo "Tentative de connexion pour ${username} sur le serveur ${server_choice_display} (Argument /v: \"${userv}\")..."
 
-# Lance la connexion FreeRDP
-xfreerdp3 /dynamic-resolution /network:auto /sec:nla +auto-reconnect \
+# Lance la connexion FreeRDP 3 SDL (Wayland natif)
+sdl-freerdp3 /dynamic-resolution /network:auto /sec:nla +auto-reconnect \
  /gfx /rfx /gdi:hw /cert:ignore \
- $sound_opt $mic_opt -themes -wallpaper +clipboard /clipboard:use-selection:CLIPBOARD \
+ $sound_opt $mic_opt -themes -wallpaper +clipboard \
  /kbd:layout:0x0000040C \
  /drive:Linux,/home/$USER \
  $multimon_opt \
