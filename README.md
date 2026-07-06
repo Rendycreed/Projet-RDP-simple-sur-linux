@@ -74,15 +74,34 @@ Sélectionner **Avancée** dans la liste pour saisir manuellement un host (IP ou
 
 ## Configuration
 
-La liste des serveurs est définie dans `connexion_serveur.sh` :
+La liste des serveurs est stockée dans un fichier de configuration externe,
+créé automatiquement au premier lancement :
 
-```bash
-declare -A SERVEURS=(
-    ["RDP_1"]="10.0.0.10"
-    ["RDP_2"]="10.0.0.11"
-)
 ```
+~/.config/rdp-connexion/serveurs.conf
+```
+
+Format : une ligne `NOM=IP` par serveur (les lignes vides et celles commençant
+par `#` sont ignorées) :
+
+```
+RDP_COMPTA=10.0.0.10
+RDP_PROD=10.0.0.11
+```
+
+On peut aussi ajouter un serveur directement depuis l'interface : mode
+**Avancée**, renseigner le Host + un Nom, puis cocher **Enregistrer ce serveur**.
+Il apparaîtra dans le menu au prochain lancement.
+
+## Client FreeRDP
+
+Le script détecte automatiquement le client FreeRDP disponible et adapte la
+syntaxe de ses options :
+
+- Session **Wayland** → `sdl-freerdp3`
+- Session **X11** → `xfreerdp3`
+- Repli → `xfreerdp` (FreeRDP 2, ex. Debian 12)
 
 ## État du projet
 
-Projet à ses débuts, les deux fichiers actuels sont fonctionnels et déjà utilisés en production.
+Projet en développement, fonctionnel et déjà utilisé en production.
