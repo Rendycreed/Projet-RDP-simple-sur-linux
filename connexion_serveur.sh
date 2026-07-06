@@ -61,19 +61,37 @@ if [ -z "$session" ] && [ -n "$WAYLAND_DISPLAY" ]; then
 	session="wayland"
 fi
 
-if [ "$session" = "wayland" ] && command -v sdl-freerdp3 >/dev/null 2>&1; then
-	RDP_BIN="sdl-freerdp3"; RDP_GEN="3"
-elif command -v xfreerdp3 >/dev/null 2>&1; then
-	RDP_BIN="xfreerdp3"; RDP_GEN="3"
-elif command -v sdl-freerdp3 >/dev/null 2>&1; then
-	RDP_BIN="sdl-freerdp3"; RDP_GEN="3"
-elif command -v xfreerdp >/dev/null 2>&1; then
-	RDP_BIN="xfreerdp"; RDP_GEN="2"
+# Ordre de préférence des clients selon la session
+if [ "$session" = "wayland" ]; then
+	RDP_CANDIDATS="sdl-freerdp3 sdl-freerdp xfreerdp3 xfreerdp"
 else
+	RDP_CANDIDATS="xfreerdp3 xfreerdp sdl-freerdp3 sdl-freerdp"
+fi
+
+RDP_BIN=""
+for c in $RDP_CANDIDATS; do
+	if command -v "$c" >/dev/null 2>&1; then
+		RDP_BIN="$c"
+		break
+	fi
+done
+
+if [ -z "$RDP_BIN" ]; then
 	yad --error --title="FreeRDP introuvable" \
 		--text="Aucun client FreeRDP trouvé (sdl-freerdp3, xfreerdp3 ou xfreerdp).\nInstallez le paquet <b>freerdp3</b> (ou freerdp2)."
 	exit 1
 fi
+
+# Génération de FreeRDP : les binaires suffixés "3" sont en v3. Pour un binaire
+# non suffixé (xfreerdp/sdl-freerdp), la génération varie selon la distro
+# (v2 sur Debian/Ubuntu, v3 sur Fedora/Arch) -> on lit la version réelle.
+case "$RDP_BIN" in
+	*3)
+		RDP_GEN="3" ;;
+	*)
+		rdp_ver=$("$RDP_BIN" --version 2>/dev/null | grep -oiE "version [0-9]+" | grep -oE "[0-9]+" | head -n1)
+		if [ "$rdp_ver" = "2" ]; then RDP_GEN="2"; else RDP_GEN="3"; fi ;;
+esac
 
 # Syntaxe des options selon la génération de FreeRDP (2 ou 3)
 if [ "$RDP_GEN" = "2" ]; then

@@ -28,6 +28,22 @@ sudo pacman -S yad
 
 ## Installation
 
+### Installation automatique (recommandé)
+
+Le script `install_rdp.sh` détecte la distribution, installe les dépendances
+(client FreeRDP + `yad`) puis déploie le script et son raccourci :
+
+```bash
+git clone https://github.com/Rendycreed/Projet-RDP-simple-sur-linux.git
+cd Projet-RDP-simple-sur-linux
+sudo ./install_rdp.sh
+```
+
+Distributions gérées : Debian / Ubuntu (`apt`), Arch (`pacman`), Fedora / RHEL /
+CentOS (`dnf`). Sur les autres, installez manuellement un client FreeRDP + `yad`.
+
+### Installation manuelle
+
 1. Copier le script dans `/opt/rdp/` :
    ```bash
    sudo mkdir -p /opt/rdp
@@ -40,7 +56,8 @@ sudo pacman -S yad
    sudo cp connexion-serveurs.desktop /usr/share/applications/
    ```
 
-3. Éditer le script pour renseigner la liste des serveurs (section `SERVEURS` en haut du fichier).
+La liste des serveurs se remplit ensuite via le fichier de configuration
+(voir la section *Configuration*) ou directement depuis l'interface.
 
 ## Utilisation
 

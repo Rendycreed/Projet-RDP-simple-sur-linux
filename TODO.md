@@ -4,7 +4,12 @@ Plan des modifications prévues sur cette phase.
 
 ---
 
-## 1. Modifier `connexion_serveur.sh` — son/micro optionnels
+> Statut : points 1 et 2 **FAITS**. Bonus faits en cours de route : liste des
+> serveurs externalisée en fichier de config + enregistrement depuis l'interface,
+> unification des scripts x11/wayland (détection FreeRDP au runtime), fix du
+> faux message d'erreur à la déconnexion (code 12).
+
+## 1. Modifier `connexion_serveur.sh` — son/micro optionnels  ✅ FAIT
 
 **Objectif** : rendre le son et le micro optionnels via cases à cocher dans le formulaire yad. Par défaut **décochés**.
 
@@ -48,7 +53,7 @@ Puis dans l'appel `xfreerdp`, remplacer `/sound /mic` par `$sound_opt $mic_opt`.
 
 ---
 
-## 2. Créer `install_rdp.sh` — installeur multi-distro
+## 2. Créer `install_rdp.sh` — installeur multi-distro  ✅ FAIT
 
 **Objectif** : script d'installation CLI qui détecte la distro et installe les dépendances + le projet.
 
