@@ -56,9 +56,19 @@ des paquets et corrige dans les deux sens :
 - FreeRDP 3 présent alors qu'il n'était pas attendu (backports, PPA) → il est
   utilisé en priorité
 
+Chaque paquet est vérifié **individuellement** (via le `Candidate` de
+`apt-cache policy`) avant d'être demandé à `apt` : `freerdp3-sdl` par exemple
+n'existe pas sur Ubuntu 24.04 alors que `freerdp3-x11` y est présent, et il est
+donc simplement ignoré.
+
 Le type de session (X11 / Wayland) est aussi détecté — via `loginctl`, car
 `sudo` ne transmet pas `XDG_SESSION_TYPE`. En session Wayland sous FreeRDP 2,
 l'installeur signale que `xfreerdp` passera par XWayland.
+
+En fin d'installation, la présence effective d'un binaire FreeRDP
+(`sdl-freerdp3`, `xfreerdp3` ou `xfreerdp`) et de `yad` est contrôlée : les noms
+de paquets varient d'une distribution à l'autre, seuls les binaires prouvent que
+le lanceur pourra fonctionner.
 
 ### Installation manuelle
 

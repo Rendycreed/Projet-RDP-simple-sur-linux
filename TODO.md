@@ -140,7 +140,27 @@ Ubuntu 22.04, Ubuntu 24.04, et le cas « aucun paquet freerdp ».
 
 ---
 
-## 5. Points ouverts / à discuter
+## 5. Correction de bug — Ubuntu 24.04  ✅ FAIT (post-v1.0)
+
+**Symptôme constaté en test réel** (Ubuntu 24.04, clone de `main`/v1.0.0) :
+`sudo ./install_rdp.sh` s'arrête sur `Unable to locate package freerdp3-sdl`,
+puis plus rien — `/opt/rdp` n'est pas créé, aucun raccourci.
+
+**Cause** : la v1.0.0 testait la disponibilité de `freerdp3-x11` puis installait
+`freerdp3-x11 freerdp3-sdl yad` sans vérifier `freerdp3-sdl`. Ubuntu 24.04
+fournit `freerdp3-x11` mais pas `freerdp3-sdl` (paquet présent seulement sur
+Debian 13 / Ubuntu 24.10+). `apt` échoue, le `set -e` interrompt le script avant
+les étapes de copie, sans message.
+
+**Corrections** :
+- vérification paquet par paquet (déjà apportée par le point 4)
+- test de disponibilité basé sur le `Candidate` de `apt-cache policy` plutôt que
+  sur `apt-cache show`, qui réussit aussi pour un paquet seulement référencé
+- message d'erreur explicite si `apt` / `pacman` / `dnf` échoue, au lieu d'une
+  mort silencieuse par `set -e`
+- contrôle final de la présence d'un binaire FreeRDP et de `yad`
+
+## 6. Points ouverts / à discuter
 
 - **Tests réels** : sur quelles distros tester en vrai ? (Debian 13 MJ-PORT
   confirmé ; Debian 12, Ubuntu, Arch, Fedora restent en simulation)

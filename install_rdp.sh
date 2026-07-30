@@ -94,8 +94,15 @@ if matches debian || matches ubuntu; then
 	info "Gestionnaire : apt"
 	apt-get update
 
-	# Le paquet existe-t-il dans les dépôts configurés ?
-	apt_dispo() { apt-cache show "$1" 2>/dev/null | grep -q '^Package:'; }
+	# Le paquet est-il réellement installable depuis les dépôts configurés ?
+	# On lit le "Candidate" de apt-cache policy : apt-cache show peut réussir
+	# pour un paquet seulement référencé par un autre, sans version installable.
+	apt_dispo() {
+		local cand
+		cand=$(apt-cache policy "$1" 2>/dev/null \
+			| awk -F': *' '/^ *Candidate:/ { print $2; exit }')
+		[ -n "$cand" ] && [ "$cand" != "(none)" ]
+	}
 
 	# Choix de la génération de FreeRDP selon la version de la distribution :
 	#   Debian 12 (bookworm) -> FreeRDP 2 (pas de paquet freerdp3 dans les dépôts)
@@ -149,19 +156,29 @@ if matches debian || matches ubuntu; then
 	fi
 
 	info "Installation : $PKGS"
-	apt-get install -y $PKGS
+	if ! apt-get install -y $PKGS; then
+		err "L'installation des paquets a échoué : $PKGS"
+		err "Corrigez le problème (dépôts, réseau) puis relancez l'installeur."
+		exit 1
+	fi
 
 elif matches arch; then
 	info "Gestionnaire : pacman"
 	PKGS="freerdp yad"
 	info "Installation : $PKGS"
-	pacman -Sy --needed --noconfirm $PKGS
+	if ! pacman -Sy --needed --noconfirm $PKGS; then
+		err "L'installation des paquets a échoué : $PKGS"
+		exit 1
+	fi
 
 elif matches fedora || matches rhel || matches centos; then
 	info "Gestionnaire : dnf"
 	PKGS="freerdp yad"
 	info "Installation : $PKGS"
-	dnf install -y $PKGS
+	if ! dnf install -y $PKGS; then
+		err "L'installation des paquets a échoué : $PKGS"
+		exit 1
+	fi
 
 else
 	err "Distribution non supportée : $DISTRO (ID_LIKE=${LIKE:-aucun})"
@@ -169,6 +186,29 @@ else
 	exit 1
 fi
 ok "Dépendances installées."
+
+# Contrôle final : un client FreeRDP utilisable par connexion_serveur.sh est-il
+# bien présent ? (les noms de paquets varient, les binaires sont la vraie preuve)
+RDP_TROUVES=""
+for b in sdl-freerdp3 sdl-freerdp xfreerdp3 xfreerdp; do
+	if command -v "$b" >/dev/null 2>&1; then
+		RDP_TROUVES="$RDP_TROUVES $b"
+	fi
+done
+if [ -z "$RDP_TROUVES" ]; then
+	err "Aucun binaire FreeRDP trouvé après installation"
+	err "(attendu : sdl-freerdp3, xfreerdp3 ou xfreerdp)."
+	err "Le lanceur ne pourrait pas fonctionner : installation interrompue."
+	exit 1
+fi
+info "Client(s) FreeRDP disponible(s) :$RDP_TROUVES"
+if [ "$SESSION_TYPE" = "wayland" ] && ! command -v sdl-freerdp3 >/dev/null 2>&1; then
+	info "Session Wayland sans client SDL : le lanceur utilisera xfreerdp via XWayland."
+fi
+if ! command -v yad >/dev/null 2>&1; then
+	err "yad est absent après installation : l'interface graphique ne peut pas s'afficher."
+	exit 1
+fi
 
 # --- 6. Déploiement du script ---
 info "Installation du script dans $INSTALL_DIR"
