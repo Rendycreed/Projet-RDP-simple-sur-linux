@@ -176,7 +176,30 @@ syntaxe de ses options :
 
 ## État du projet
 
-Version **1.0.0** — version finale stable, utilisée en production.
+Version **1.1.0** — version stable, utilisée en production.
 
 Les développements suivants sont des évolutions bonus, préparées sur la branche
-`develop` puis fusionnées dans `main` avec un nouveau tag (`v1.1.0`, etc.).
+`develop` puis fusionnées dans `main` avec un nouveau tag.
+
+### Historique des versions
+
+**v1.1.0**
+
+- Ajout de `uninstall_rdp.sh` (désinstalleur, avec `--purge`)
+- `install_rdp.sh` : choix de la génération FreeRDP selon la version de la
+  distribution, détection X11 / Wayland via `loginctl`
+- Correction d'un échec d'installation sur Ubuntu 24.04 : `freerdp3-sdl` était
+  demandé à `apt` sans vérification alors qu'il n'existe pas sur cette version,
+  ce qui interrompait le script avant l'installation et sans message
+- Vérification des binaires FreeRDP et `yad` en fin d'installation
+
+Testé en réel sur Debian 13 et Ubuntu 24.04.
+
+**v1.0.0**
+
+- Script unique `connexion_serveur.sh` : détection automatique du client
+  FreeRDP (X11 / Wayland, FreeRDP 2 ou 3), son et micro optionnels
+- Liste des serveurs externalisée dans `~/.config/rdp-connexion/serveurs.conf`,
+  avec enregistrement depuis l'interface
+- Correction du faux message d'erreur à la déconnexion (code de sortie 12)
+- `install_rdp.sh` : installeur multi-distribution
