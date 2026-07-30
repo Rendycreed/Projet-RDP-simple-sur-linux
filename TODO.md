@@ -4,10 +4,14 @@ Plan des modifications prévues sur cette phase.
 
 ---
 
-> Statut : points 1 et 2 **FAITS**. Bonus faits en cours de route : liste des
-> serveurs externalisée en fichier de config + enregistrement depuis l'interface,
-> unification des scripts x11/wayland (détection FreeRDP au runtime), fix du
-> faux message d'erreur à la déconnexion (code 12).
+> Statut : points 1 et 2 **FAITS** → livrés dans la **v1.0.0** (tag sur `main`).
+> Bonus faits en cours de route : liste des serveurs externalisée en fichier de
+> config + enregistrement depuis l'interface, unification des scripts
+> x11/wayland (détection FreeRDP au runtime), fix du faux message d'erreur à la
+> déconnexion (code 12).
+>
+> Points 3 et 4 **FAITS** après la v1.0.0 : évolutions bonus, à fusionner dans
+> `main` sous le tag `v1.1.0`.
 
 ## 1. Modifier `connexion_serveur.sh` — son/micro optionnels  ✅ FAIT
 
@@ -104,8 +108,41 @@ sudo ./install_rdp.sh
 
 ---
 
-## 3. Points ouverts / à discuter
+## 3. Créer `uninstall_rdp.sh` — désinstalleur  ✅ FAIT (post-v1.0)
 
-- **Debian 12 vs 13** : `/etc/os-release` donne la version, on adapte le paquet FreeRDP en fonction ?
-- **Désinstalleur** `uninstall_rdp.sh` à prévoir ? (peut venir dans une phase suivante)
-- **Tests** : sur quelles distros on peut tester en réel ? (Debian 13 MJ-PORT confirmé, autres ?)
+**Objectif** : retirer proprement ce qu'a posé `install_rdp.sh`.
+
+- Supprime `/opt/rdp/connexion_serveur.sh` et le `.desktop`, rafraîchit la base
+  des applications. `/opt/rdp` retiré seulement s'il est vide.
+- Inventaire affiché + confirmation avant toute suppression (`-y` pour passer outre).
+- `--purge` supprime en plus `~/.config/rdp-connexion` de l'utilisateur appelant
+  (récupéré via `$SUDO_USER` + `getent passwd`, car `$HOME` vaut `/root` sous sudo).
+  Les configs des autres comptes sont listées mais conservées.
+- Les paquets (FreeRDP, yad) ne sont jamais désinstallés : d'autres logiciels
+  peuvent en dépendre. La commande de retrait est affichée en fin de traitement.
+
+## 4. Distinction Debian 12 / 13 dans `install_rdp.sh`  ✅ FAIT (post-v1.0)
+
+**Objectif** : choisir la bonne génération de FreeRDP selon la version de la distro.
+
+- Lecture de `VERSION_ID` : Debian ≤ 12 → FreeRDP 2 attendu, Debian 13+ et
+  Ubuntu 24.04+ → FreeRDP 3 attendu.
+- Arbitrage par la disponibilité réelle des paquets (`apt-cache show`), **dans
+  les deux sens** : repli v3 → v2 si absente, mais aussi bascule v2 → v3 si
+  freerdp3 est présent alors qu'il n'était pas attendu (backports, PPA).
+- Erreur claire si aucun client FreeRDP n'est disponible dans les dépôts.
+- Détection du serveur d'affichage via `loginctl` (`sudo` ne transmet pas
+  `XDG_SESSION_TYPE`), repli sur le socket `/run/user/$SUDO_UID/wayland-*`.
+  En Wayland + FreeRDP 2, avertit que `xfreerdp` passera par XWayland.
+
+Testé en simulation sur : Debian 12, Debian 12 + backports, Debian 13,
+Ubuntu 22.04, Ubuntu 24.04, et le cas « aucun paquet freerdp ».
+
+---
+
+## 5. Points ouverts / à discuter
+
+- **Tests réels** : sur quelles distros tester en vrai ? (Debian 13 MJ-PORT
+  confirmé ; Debian 12, Ubuntu, Arch, Fedora restent en simulation)
+- **Version LTSP** : reporter le fix code 12 sur la version séparée si la base
+  n'est pas la même.

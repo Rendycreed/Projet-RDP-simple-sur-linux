@@ -10,11 +10,16 @@ Projet utilisé en environnement de production professionnel.
 
 Le paquet à installer peut varier selon la distribution et le serveur d'affichage utilisé (X11 ou Wayland).
 
-| Distribution         | Paquet                        |
-|----------------------|-------------------------------|
-| Debian 12            | `freerdp2-x11`                |
-| Debian 13 / Ubuntu   | `freerdp3-x11` ou `freerdp3-wayland` |
-| Arch Linux           | `freerdp`                     |
+| Distribution           | Génération | Paquets                       |
+|------------------------|------------|-------------------------------|
+| Debian 12 (bookworm)   | FreeRDP 2  | `freerdp2-x11`                |
+| Debian 13 (trixie)     | FreeRDP 3  | `freerdp3-x11` + `freerdp3-sdl` |
+| Ubuntu 24.04+          | FreeRDP 3  | `freerdp3-x11` + `freerdp3-sdl` |
+| Ubuntu 22.04           | FreeRDP 2  | `freerdp2-x11`                |
+| Arch Linux             | FreeRDP 3  | `freerdp`                     |
+| Fedora / RHEL / CentOS | FreeRDP 3  | `freerdp`                     |
+
+`install_rdp.sh` fait ce choix automatiquement (voir *Installation*).
 
 ### YAD (interface graphique)
 
@@ -42,6 +47,19 @@ sudo ./install_rdp.sh
 Distributions gérées : Debian / Ubuntu (`apt`), Arch (`pacman`), Fedora / RHEL /
 CentOS (`dnf`). Sur les autres, installez manuellement un client FreeRDP + `yad`.
 
+**Choix des paquets FreeRDP** — l'installeur lit `VERSION_ID` dans
+`/etc/os-release` pour viser la bonne génération (Debian 12 → FreeRDP 2,
+Debian 13 et Ubuntu 24.04+ → FreeRDP 3), puis vérifie la disponibilité réelle
+des paquets et corrige dans les deux sens :
+
+- FreeRDP 3 absent des dépôts → repli automatique sur `freerdp2-x11`
+- FreeRDP 3 présent alors qu'il n'était pas attendu (backports, PPA) → il est
+  utilisé en priorité
+
+Le type de session (X11 / Wayland) est aussi détecté — via `loginctl`, car
+`sudo` ne transmet pas `XDG_SESSION_TYPE`. En session Wayland sous FreeRDP 2,
+l'installeur signale que `xfreerdp` passera par XWayland.
+
 ### Installation manuelle
 
 1. Copier le script dans `/opt/rdp/` :
@@ -58,6 +76,33 @@ CentOS (`dnf`). Sur les autres, installez manuellement un client FreeRDP + `yad`
 
 La liste des serveurs se remplit ensuite via le fichier de configuration
 (voir la section *Configuration*) ou directement depuis l'interface.
+
+## Désinstallation
+
+```bash
+sudo ./uninstall_rdp.sh
+```
+
+Le script retire `/opt/rdp/connexion_serveur.sh` et le raccourci
+`/usr/share/applications/connexion-serveurs.desktop`, après avoir listé ce qui
+va être supprimé et demandé confirmation.
+
+| Option      | Effet                                                            |
+|-------------|------------------------------------------------------------------|
+| *(aucune)*  | Retire le script et le raccourci, **conserve** la configuration   |
+| `--purge`   | Retire aussi `~/.config/rdp-connexion` (liste des serveurs)       |
+| `-y`, `--yes` | Ne demande pas de confirmation                                 |
+| `-h`, `--help` | Affiche l'aide                                                |
+
+Notes :
+
+- `/opt/rdp` n'est supprimé que s'il est vide.
+- Les paquets FreeRDP et `yad` ne sont **jamais** désinstallés : d'autres
+  logiciels peuvent en dépendre. La commande pour les retirer est affichée en
+  fin de traitement.
+- Avec `--purge`, seule la configuration de l'utilisateur qui lance `sudo` est
+  supprimée. Les configurations des autres comptes sont signalées mais
+  conservées.
 
 ## Utilisation
 
@@ -121,4 +166,7 @@ syntaxe de ses options :
 
 ## État du projet
 
-Projet en développement, fonctionnel et déjà utilisé en production.
+Version **1.0.0** — version finale stable, utilisée en production.
+
+Les développements suivants sont des évolutions bonus, préparées sur la branche
+`develop` puis fusionnées dans `main` avec un nouveau tag (`v1.1.0`, etc.).
